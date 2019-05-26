@@ -50,9 +50,15 @@ class App extends Component {
     });
   }
 
-  onToggleForm  = () =>{
+  onToggleForm  = () => {
     this.setState({
       isDisplayForm: !this.state.isDisplayForm
+    });
+  }
+
+  onCloseForm = () => {
+    this.setState({
+      isDisplayForm: false
     });
   }
 
@@ -69,7 +75,7 @@ class App extends Component {
   render() {
     let { tasks, isDisplayForm } = this.state;
     let elementTaskForm = isDisplayForm 
-          ? <TaskForm  onSubmit={ this.onSubmit }/> 
+          ? <TaskForm  onSubmit={ this.onSubmit } onCloseForm={ this.onCloseForm }/> 
           : '';
     return (
       <div className="App">

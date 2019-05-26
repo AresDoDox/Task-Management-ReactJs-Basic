@@ -26,9 +26,23 @@ class TaskForm extends Component {
     });
   }
 
+  onCloseForm = () => {
+    this.props.onCloseForm();
+  }
+
   onSubmit = (event) =>{
     event.preventDefault();
     this.props.onSubmit(this.state);
+    // Cancel & close form
+    this.onClear();
+    this.onCloseForm();
+  }
+
+  onClear = () => {
+    this.setState({
+      namework: '',
+      statuswork: false
+    })
   }
 
   render() {
@@ -64,7 +78,7 @@ class TaskForm extends Component {
           </CardBody>
           <CardFooter>
             <Button type="submit" color="primary">Lưu lại</Button>{' '}
-            <Button type="reset">Hủy bỏ</Button>
+            <Button onClick={this.onClear}>Hủy bỏ</Button>
           </CardFooter>
         </Form>
       </Card>
