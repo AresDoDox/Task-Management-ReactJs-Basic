@@ -15,7 +15,14 @@ class App extends Component {
     this.state = {
       tasks: [], //id, namework, status 
       isDisplayForm: false,
-      taskEditing: null 
+      taskEditing: null,
+      filter: {
+        filterName: '',
+        filterStatus: -1
+      },
+      keyword: '',
+      softBy: 'name',
+      softValue: 1
     }
   }
 
@@ -149,8 +156,83 @@ class App extends Component {
     return result;
   }
 
+  //Filter
+  onFilter = (filterName, filterStatus) => {
+    let status = parseInt(filterStatus,10);
+    this.setState({
+      filter: {
+        filterName: filterName.toLowerCase(),
+        filterStatus : status
+      }
+    });
+  }
+  //Search
+  onSearch = (keyword) => {
+    if(keyword){
+      this.setState({
+        keyword
+      });
+    }
+
+  }
+  //Soft
+  onSoft = (softBy, softValue) => {
+    this.setState({
+          softBy: softBy,
+          softValue: softValue
+    });
+  }
+
   render() {
-    var { tasks, isDisplayForm, taskEditing } = this.state;
+    var { tasks, isDisplayForm, taskEditing, filter, keyword, softBy, softValue } = this.state;
+    if(filter && filter.filterName){
+      tasks = tasks.filter(task => {
+        return task.namework.toLowerCase().indexOf(filter.filterName) !== -1
+      });
+    }
+
+    tasks = tasks.filter(task => {
+        if(filter.filterStatus === -1 ){
+          return task
+        }else{
+          return task.status === (filter.filterStatus === 1 ? true : false)
+        }  
+    });
+
+    if(keyword){
+      tasks = tasks.filter(task => {
+        return task.namework.toLowerCase().indexOf(keyword) !== -1
+      });
+    }
+    //Soft
+    if(softBy === 'name'){
+      tasks = tasks.sort((a, b) => {
+        var nameA = a.namework.toUpperCase(); // bỏ qua hoa thường
+        var nameB = b.namework.toUpperCase(); // bỏ qua hoa thường
+        if (nameA < nameB) {
+          return -softValue;
+        }
+        if (nameA > nameB) {
+          return softValue  ;
+        }
+        // name trùng nhau
+        return 0;
+      });
+    }else{
+      tasks = tasks.sort((a, b) => {
+        var nameA = a.status;
+        var nameB = b.status; 
+        if (nameA < nameB) {
+          return softValue;
+        }
+        if (nameA > nameB) {
+          return -softValue  ;
+        }
+        // name trùng nhau
+        return 0;
+      });
+    }
+
     let elementTaskForm = isDisplayForm 
           ? <TaskForm  
               onSubmit={ this.onSubmit } 
@@ -173,12 +255,18 @@ class App extends Component {
                 <Button color="primary" onClick={ this.onToggleForm }>Thêm công việc</Button>{' '}
                 <Button color="danger" onClick={this.createSampleData}>Tạo dữ liệu mẫu</Button>{' '}
               </Col>
-              <Control />
+              <Control 
+                onSearch={this.onSearch}
+                onSoft={this.onSoft}
+                softBy={softBy}
+                softValue={softValue}
+              />
               <TaskList 
                 tasks={ tasks } 
                 editTask={this.editTask}
                 onUpdateStatus = {this.onUpdateStatus}
                 onDelete = {this.onDelete}
+                onFilter = {this.onFilter}
               />
             </Col>
           </Row>
