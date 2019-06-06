@@ -4,13 +4,42 @@ import {
   Card, CardHeader, CardBody, CardFooter,
   Form, FormGroup, Label, Input, Button
 } from 'reactstrap';
+import TaskList from './TaskList';
 
 class TaskForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      id: '',
       namework:'',
       statuswork: false
+    }
+  }
+
+  componentWillMount() {
+    if(this.props.task){
+      this.setState({
+        id: this.props.task.id,
+        namework: this.props.task.namework,
+        statuswork: this.props.task.status
+      });
+    }
+  }
+
+  componentWillReceiveProps(nextProps){
+    if(nextProps && nextProps.task){
+      this.setState({
+        id: nextProps.task.id,
+        namework: nextProps.task.namework,
+        statuswork: nextProps.task.status
+      });
+    }
+    if(nextProps && nextProps.task === null){
+      this.setState({
+        id: '',
+        namework: '',
+        statuswork: false
+      });
     }
   }
 
@@ -49,7 +78,7 @@ class TaskForm extends Component {
     // let { namework, status } = this.state;
     return (
       <Card>
-        <CardHeader>Thêm công việc</CardHeader>
+        <CardHeader>{ this.state.id !== '' ? 'Chỉnh sửa công việc': 'Thêm công việc' }</CardHeader>
         <Form onSubmit={this.onSubmit}>
           <CardBody>
             <FormGroup>
@@ -58,7 +87,7 @@ class TaskForm extends Component {
                 type="text"
                 id="namework"
                 name="namework"
-                value={ this.state.namework }
+                value={ this.state.namework  }
                 onChange={this.onChangeForm}
               />
             </FormGroup>

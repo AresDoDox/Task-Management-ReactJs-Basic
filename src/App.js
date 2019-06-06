@@ -14,9 +14,12 @@ class App extends Component {
     super(props);
     this.state = {
       tasks: [], //id, namework, status 
-      isDisplayForm: false 
+      isDisplayForm: false,
+      taskEditing: null 
     }
   }
+
+  //Get data
   componentWillMount() {
     if(localStorage && localStorage.getItem('tasks')){
       var tasks = JSON.parse(localStorage.getItem('tasks'));
@@ -26,6 +29,7 @@ class App extends Component {
     }
   }
 
+  //Dữ liệu mẫu
   createSampleData = () => {
     let tasks = [
       {
@@ -50,32 +54,109 @@ class App extends Component {
     });
   }
 
+  //Đóng/mở form
   onToggleForm  = () => {
-    this.setState({
-      isDisplayForm: !this.state.isDisplayForm
-    });
+    if(this.state.isDisplayForm && this.state.taskEditing !== null ){
+      this.setState({
+        isDisplayForm: true,
+        taskEditing: null
+      });
+    }else{
+      this.setState({
+        isDisplayForm: !this.state.isDisplayForm,
+        taskEditing: null
+      });
+    }
   }
 
+  onShowForm = () => {
+    this.setState({
+      isDisplayForm: true
+    });
+  }
+  //Đóng Form
   onCloseForm = () => {
     this.setState({
-      isDisplayForm: false
+      isDisplayForm: false,
+      taskEditing: null
     });
   }
 
+  //Click submit
   onSubmit = (data) => {
-    data.id = randomstring.generate(5);
     let { tasks } = this.state;
-    tasks.push(data)
+    if(data.id === ''){
+      data.id = randomstring.generate(5);
+      tasks.push(data)
+    }else{
+      let index = this.findIndex(data.id);
+      tasks[index] = data;
+    }
     this.setState({
-      tasks: tasks
+      tasks: tasks,
+      taskEditing: null
     })
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }
+  //Chỉnh sửa form
+  editTask = (id) => {
+    this.onShowForm();
+    let { tasks } = this.state;
+    var index = this.findIndex(id);
+    var taskEditing = tasks[index];
+    this.setState({
+      taskEditing
+    });
+
+    
+    
+  }
+
+  //Cập nhật status
+  onUpdateStatus = (id) => {
+    var { tasks } = this.state;
+    var index = this.findIndex(id);
+    if( index !== -1){
+      tasks[index].status = !tasks[index].status
+    }
+    this.setState({
+      tasks
+    });
+    localStorage.setItem('tasks',JSON.stringify(tasks));
+  }
+
+
+  //Xóa phần tử
+  onDelete = (id) => {
+    var { tasks } = this.state;
+    var index = this.findIndex(id);
+    tasks.splice(index, 1)
+    this.setState({
+      tasks
+    });
+    localStorage.setItem('tasks',JSON.stringify(tasks));
+  }
+
+  //Tìm index
+  findIndex = (id) => {
+    var { tasks } = this.state;
+    let result = -1;
+    tasks.forEach( (task,index) => {
+      if(task.id === id){
+        return result = index; 
+      }
+    });
+    return result;
+  }
 
   render() {
-    let { tasks, isDisplayForm } = this.state;
+    var { tasks, isDisplayForm, taskEditing } = this.state;
     let elementTaskForm = isDisplayForm 
-          ? <TaskForm  onSubmit={ this.onSubmit } onCloseForm={ this.onCloseForm }/> 
+          ? <TaskForm  
+              onSubmit={ this.onSubmit } 
+              onCloseForm={ this.onCloseForm }
+              task = {taskEditing}
+            /> 
           : '';
     return (
       <div className="App">
@@ -93,7 +174,12 @@ class App extends Component {
                 <Button color="danger" onClick={this.createSampleData}>Tạo dữ liệu mẫu</Button>{' '}
               </Col>
               <Control />
-              <TaskList tasks={ tasks }/>
+              <TaskList 
+                tasks={ tasks } 
+                editTask={this.editTask}
+                onUpdateStatus = {this.onUpdateStatus}
+                onDelete = {this.onDelete}
+              />
             </Col>
           </Row>
         </Container>
@@ -101,5 +187,4 @@ class App extends Component {
     );
   }
 }
-
 export default App;
